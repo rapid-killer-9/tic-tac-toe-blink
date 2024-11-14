@@ -7,15 +7,15 @@ import {
 import { PublicKey } from "@solana/web3.js";
 
 import {
-  ______________Type,
+  CreateTicTacToeResponse,
   CLUSTER_TYPES,
-  I______________,
+  ITicTacToeGame,
   VERIFIED_CURRENCY,
 } from "@/common/types";
 import logger from "@/common/logger";
 import { getRequestParam } from "@/common/helper/getParams";
 import { GenericError } from "@/common/helper/error";
-import { create______________ } from "@/common/utils/api.util";
+import { createTicTacToeGame} from "@/common/utils/api.util";
 import { StatusCodes } from "http-status-codes";
 import { jsonResponse, Promisify } from "@/common/helper/responseMaker";
 
@@ -64,27 +64,29 @@ export const POST = async (req: Request) => {
     /////////////////////////////////////
     ///////////Parse Phase///////////////
     /////////////////////////////////////
-    const ______________Json: I______________ = {
+    const ticTacToeData: ITicTacToeGame = {
       Name: name,
+      account: account.toString(),
+      token,
+      wager,
+      startDate,
+      endDate,
     };
-    const ______________ = await Promisify<______________Type>(
-      create______________(clusterurl, ______________Json),
+    const response = await Promisify<CreateTicTacToeResponse>(
+      createTicTacToeGame(clusterurl, ticTacToeData),
     );
-    const basicUrl =
-      process.env.IS_PROD === "prod"
-        ? "https://join.catoff.xyz" // TODO: edit link here
-        : new URL(req.url).origin;
+    const basicUrl = new URL(req.url).origin;
     const icons = {
-      name: new URL("/name.png", basicUrl).toString(), // TODO: edit link here
+      name: new URL("/tic-tac-toe.png", basicUrl).toString(), // TODO: edit link here
     };
 
-    const message = `Your ______________ has been created successfully!\nJoin with blink: https://dial.to/?action=solana-action%3Ahttps%3A%2F%2F{LINK}%2Fapi%2Factions%2F{______________}%3Fclusterurl%3D${clusterurl}%26{______________ID}%3D{______________.ID}&cluster=${clusterurl}`; // TODO: edit link here
-    logger.info(`[Create ______________ next action] final response: ${message}`);
+    const message = `Your Tic Tac Toe challenge has been created successfully!\nJoin with blink: https://dial.to/?action=solana-action%3Ahttps%3A%2F%2F${basicUrl}%2Fapi%2Factions%2Fcreate-tic-tac-toe%3Fclusterurl%3D${clusterurl}%26gameID%3D${response.gameID}&cluster=${clusterurl}`;
+    logger.info(`[Create Tic Tac Toe next action] final response: ${message}`);
     const payload: CompletedAction = {
       type: "completed",
-      title: "Your ______________ has been created successfully!",
+      title: "Your Tic Tac Toe Challenge Has Been Created Successfully!",
       icon: icons.name,
-      label: "Catoff ______________ Created",
+      label: "Catoff Tic Tac Toe Challenge Created",
       description: message,
     };
 

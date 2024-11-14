@@ -516,15 +516,26 @@ export enum JOIN_CHALLENGE_METHOD {
   CHALLENGE_ID = "CHALLENGE_ID",
 }
 
-export interface I______________ {
+export interface ITicTacToeGame {
   Name: string;
+  account: string;
+  token: VERIFIED_CURRENCY;
+  wager: number;
+  startDate: number;
+  endDate: number;
 }
 
-export interface ______________Type {}
+export interface CreateTicTacToeResponse {
+  gameID: number;
+  gameName: string;
+  gameData: ITicTacToeGame;
+}
 
-export interface I______________ById {
+export interface ITicTacToeGameById {
   Name: number;
   Media: string;
   Currency: VERIFIED_CURRENCY;
   Wager: number;
+  StartDate: number;
+  EndDate: number;
 }

@@ -9,23 +9,25 @@ import {
   ActionParameterSelectable,
 } from "@solana/actions";
 import * as web3 from "@solana/web3.js";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, sendAndConfirmTransaction} from "@solana/web3.js";
 import { StatusCodes } from "http-status-codes";
 
 import { initWeb3 } from "@/common/helper/helper";
 import {
   CLUSTER_TYPES,
   ICreateTransaction,
-  PARTICIPATION_TYPE,
   VERIFIED_CURRENCY,
+  ITicTacToeGame,
+  CreateTicTacToeResponse,
 } from "@/common/types";
 import { ONCHAIN_CONFIG } from "@/common/helper/cluster.helper";
 import { getRequestParam, validateParameters } from "@/common/helper/getParams";
 import { GenericError } from "@/common/helper/error";
 import logger from "@/common/logger";
-import { jsonResponse } from "@/common/helper/responseMaker";
+import { jsonResponse, Promisify } from "@/common/helper/responseMaker";
 import { calculateTimeRange } from "@/common/helper/parseRelativeTime";
 import { createTransaction } from "@/common/helper/transaction.helper";
+import { createTicTacToeGame } from "@/common/utils/api.util";
 
 // create the standard headers for this route (including CORS)
 const headers = createActionHeaders();
@@ -67,14 +69,15 @@ export const GET = async (req: Request) => {
           },
         ];
 
-    const href = clusterurl
-      ? `/api/actions/create-challenge?clusterurl=${clusterurl}&name={name}&token={token}&wager={wager}&startTime={startTime}&duration={duration}`
-      : `/api/actions/create-challenge?clusterurl={clusterurl}&name={name}&token={token}&wager={wager}&startTime={startTime}&duration={duration}`;
+      const href = clusterurl
+      ? `/api/actions/create-tic-tac-toe?clusterurl=${clusterurl}&name={name}&token={token}&wager={wager}&startTime={startTime}&duration={duration}`
+      : `/api/actions/create-tic-tac-toe?clusterurl={clusterurl}&name={name}&token={token}&wager={wager}&startTime={startTime}&duration={duration}`;
+  
 
     const actions: LinkedAction[] = [
       {
         type: "transaction",
-        label: "Create a ___________________", // TODO: edit text here
+        label: "Create a Tic Tac Toe Challenge", // TODO: edit text here
         href,
         parameters: [
           ...clusterOptions,
@@ -129,16 +132,16 @@ export const GET = async (req: Request) => {
         : new URL(req.url).origin;
 
     const icons = {
-      name: new URL("/name.png", basicUrl).toString(), // TODO: edit link here
+      name: new URL("/tic-tac-toe.png", basicUrl).toString(), // TODO: edit link here
     };
 
     let payload: ActionGetResponse;
 
     payload = {
-      title: ``, // TODO: edit text here
+      title: `Create Tic Tac Toe Challenge`, // TODO: edit text here
       icon: icons.name,
       type: "action",
-      description: `- `, // TODO: edit text here
+      description: `- Create a custom Tic Tac Toe challenge with specific parameters such as wager, start time, and duration.`, // TODO: edit text here
       label: "Create",
       links: { actions },
     };
@@ -163,7 +166,7 @@ export const POST = async (req: Request) => {
     /////////////////////////////////////
 
     const requestUrl = new URL(req.url);
-    logger.info("POST request received for ___________________");
+    logger.info("POST request received for Tic Tac Toe challenge creation");
 
     // Validate and retrieve parameters with logging
     const clusterurl = getRequestParam<CLUSTER_TYPES>(
@@ -202,10 +205,26 @@ export const POST = async (req: Request) => {
       logger.error(`Invalid account public key: ${body.account}`);
       throw new GenericError("Invalid account public key", StatusCodes.BAD_REQUEST);
     }
-
+    
     /////////////////////////////////////
     ///////////Parse Phase///////////////
     /////////////////////////////////////
+
+    const ticTacToeData: ITicTacToeGame = {
+      Name: name,
+      account: account.toString(),
+      token,
+      wager,
+      startDate,
+      endDate,
+    };
+    logger.info("Tic Tac Toe data: %o", ticTacToeData);
+
+    const response = await Promisify<CreateTicTacToeResponse>(
+      createTicTacToeGame(clusterurl, ticTacToeData)
+    );
+    logger.info("Tic Tac Toe game creation response: %o", response);
+
 
     /////////////////////////////////////
     /////////Transaction Phase///////////
@@ -234,7 +253,7 @@ export const POST = async (req: Request) => {
       feePayer: account, // User's wallet pays the fee
     }).add(...tx);
 
-    const href = `/api/actions/___________________/next-action?clusterurl=${clusterurl}&name=${name}&token=${token}&wager=${wager}&startDate=${startDate}&endDate=${endDate}`; // TODO: edit next action link here
+    const href = `/api/actions/join-tic-tac-toe/next-action?clusterurl=${clusterurl}&name=${name}&token=${token}&wager=${wager}&startDate=${startDate}&endDate=${endDate}`; // TODO: edit next action link here
     logger.info(`Sending next action for create challenge blinks at: ${href}`);
 
     // Create response payload
@@ -242,7 +261,7 @@ export const POST = async (req: Request) => {
       fields: {
         type: "transaction",
         transaction,
-        message: "Create Catoff ___________________", // TODO: edit text here
+        message: "Create a Catoff Tic Tac Toe challenge", // TODO: edit text here
         links: {
           next: {
             type: "post",

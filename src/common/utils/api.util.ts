@@ -2,11 +2,11 @@ import axios from "axios";
 import axiosRetry from "axios-retry";
 import logger from "@/common/logger";
 import {
-  ______________Type,
+  CreateTicTacToeResponse,
   Challenge,
   CLUSTER_TYPES,
-  I______________,
-  I______________ById,
+  ITicTacToeGame,
+  ITicTacToeGameById,
   IChallengeById,
   ICreateChallenge,
   PARTICIPATION_TYPE,
@@ -134,57 +134,57 @@ export async function getChallengeShareLink(
 }
 
 // Template function
-export async function create______________(
+export async function createTicTacToeGame(
   clusterurl: CLUSTER_TYPES,
-  ______________Data: I______________,
+  gameData: ITicTacToeGame,
 ): Promise<ResultWithError> {
   const baseUrl = ONCHAIN_CONFIG[clusterurl].BackendURL;
   const partnerApiKey = ONCHAIN_CONFIG[clusterurl].partnerApiKey;
 
   try {
     logger.info(
-      "Sending request to create ______________ at: %s and data: %o",
+      "Sending request to create Tic Tac Toe game at: %s and data: %o",
       baseUrl,
-      ______________Data,
+      gameData,
     );
-    const response = await axios.post(`${baseUrl}/______________`, ______________Data, {
+    const response = await axios.post(`${baseUrl}/tic-tac-toe`, gameData, {
       headers: {
         "x-api-key": partnerApiKey,
         "Content-Type": "application/json",
       },
       timeout: 100000,
     });
-    const result: ______________Type = response.data.data;
-    logger.info("______________ created successfully: %o", response.data);
+    const result: CreateTicTacToeResponse = response.data.data;
+    logger.info("Tic Tac Toe game created successfully: %o", response.data);
     return { data: result, error: null };
   } catch (error: any) {
-    logger.error("Error creating ______________: %s", error.stack);
+    logger.error("Error creating Tic Tac Toe game: %s", error.stack);
     return { data: null, error };
   }
 }
 
 // Template get function
-export async function get______________ById(
+export async function getTicTacToeGameById(
   clusterurl: CLUSTER_TYPES,
-  ______________Id: number,
+  gameId: number,
 ): Promise<ResultWithError> {
   const baseUrl = ONCHAIN_CONFIG[clusterurl].BackendURL;
   const partnerApiKey = ONCHAIN_CONFIG[clusterurl].partnerApiKey;
 
   try {
-    logger.info("Fetching ______________ by ID: %s from %s", ______________Id, baseUrl);
-    const response = await axios.get(`${baseUrl}/challenge/${______________Id}`, {
+    logger.info("Fetching Tic Tac Toe game by ID: %s from %s", gameId, baseUrl);
+    const response = await axios.get(`${baseUrl}/tic-tac-toe/${gameId}`, {
       headers: {
         "x-api-key": partnerApiKey,
         "Content-Type": "application/json",
       },
       timeout: 100000,
     });
-    const result: I______________ById = response.data.data;
-    logger.info("Successfully fetched ______________: %o", result);
+    const result: ITicTacToeGameById = response.data.data;
+    logger.info("Successfully fetched Tic Tac Toe game: %o", result);
     return { data: result, error: null };
   } catch (error: any) {
-    logger.error("Error fetching ______________ by ID: %s", error.stack);
+    logger.error("Error fetching Tic Tac Toe game by ID: %s", error.stack);
     return { data: null, error };
   }
 }
